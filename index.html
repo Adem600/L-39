@@ -1,0 +1,1268 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>L-39 Engineer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        body {
+            background-color: #f4f6fb;
+            color: #1e293b;
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .header {
+            background: #ffffff;
+            padding: 12px 16px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 10;
+        }
+        .header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logo-box {
+            width: 38px;
+            height: 38px;
+            background: #4338ca;
+            color: #ffffff;
+            border-radius: 11px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 19px;
+            font-weight: bold;
+            box-shadow: 0 3px 8px rgba(67, 56, 202, 0.25);
+        }
+        .brand h1 {
+            font-size: 19px;
+            font-weight: 800;
+            color: #0f172a;
+            letter-spacing: -0.3px;
+        }
+        .toolbar {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            overflow-x: auto;
+            padding-bottom: 2px;
+        }
+        .toolbar::-webkit-scrollbar {
+            display: none;
+        }
+        .tool-btn {
+            border: 1px solid #e2e8f0;
+            background: #f8fafc;
+            color: #334155;
+            padding: 7px 11px;
+            border-radius: 10px;
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+            transition: 0.15s;
+        }
+        .tool-btn:active {
+            transform: scale(0.97);
+        }
+        .tool-btn.api-btn {
+            background: #fef9c3;
+            border-color: #fde047;
+            color: #854d0e;
+        }
+        .tool-btn.api-btn.connected {
+            background: #dcfce7;
+            border-color: #86efac;
+            color: #166534;
+        }
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #eab308;
+            display: inline-block;
+        }
+        .tool-btn.api-btn.connected .status-dot {
+            background: #22c55e;
+        }
+        .tool-btn.clear-btn {
+            background: #fee2e2;
+            border-color: #fecaca;
+            color: #b91c1c;
+        }
+        .tabs-bar {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+        .tab-btn {
+            border: none;
+            background: transparent;
+            padding: 8px 10px;
+            border-radius: 9px;
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #64748b;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: 0.15s;
+        }
+        .tab-btn.active {
+            background: #ffffff;
+            color: #4338ca;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
+        }
+        .badge-count {
+            background: #e0e7ff;
+            color: #4338ca;
+            font-size: 11px;
+            padding: 2px 7px;
+            border-radius: 999px;
+            font-weight: 800;
+        }
+        .sub-status {
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 7px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #475569;
+        }
+        .sub-status-left {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .sub-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #22c55e;
+        }
+        .sub-link {
+            color: #4338ca;
+            font-weight: 700;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .main-area {
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        .view-panel {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px 16px;
+            display: none;
+        }
+        .view-panel.active {
+            display: flex;
+            flex-direction: column;
+        }
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-bottom: 16px;
+        }
+        .msg-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 9px;
+            max-width: 100%;
+        }
+        .msg-row.user {
+            justify-content: flex-end;
+        }
+        .bot-avatar {
+            width: 30px;
+            height: 30px;
+            min-width: 30px;
+            border-radius: 50%;
+            background: #4338ca;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            margin-top: 2px;
+        }
+        .msg-bubble {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 12px 14px;
+            font-size: 14.5px;
+            line-height: 1.55;
+            color: #1e293b;
+            max-width: 88%;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+            word-wrap: break-word;
+            overflow-wrap: anywhere;
+        }
+        .msg-row.user .msg-bubble {
+            background: #4338ca;
+            color: #ffffff;
+            border-color: #4338ca;
+            border-bottom-right-radius: 4px;
+        }
+        .msg-row.bot .msg-bubble {
+            border-top-left-radius: 4px;
+        }
+        .msg-bubble h4 {
+            font-size: 15px;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 8px 0 4px;
+        }
+        .msg-bubble h4:first-child {
+            margin-top: 0;
+        }
+        .msg-bubble ul {
+            padding-left: 18px;
+            margin: 6px 0;
+        }
+        .msg-bubble li {
+            margin-bottom: 4px;
+        }
+        .msg-bubble p {
+            margin-bottom: 6px;
+        }
+        .msg-bubble p:last-child {
+            margin-bottom: 0;
+        }
+        .source-pill {
+            display: inline-block;
+            margin-top: 10px;
+            background: #eef2ff;
+            color: #4338ca;
+            font-size: 11.5px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 8px;
+        }
+        .saved-pill {
+            display: inline-block;
+            margin-top: 8px;
+            background: #dcfce7;
+            color: #166534;
+            font-size: 11.5px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 8px;
+        }
+        .warn-pill {
+            display: inline-block;
+            margin-top: 8px;
+            background: #fef3c7;
+            color: #92400e;
+            font-size: 11.5px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 8px;
+        }
+        .chat-input-bar {
+            background: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            padding: 10px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .chat-input {
+            flex: 1;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 13px;
+            padding: 11px 14px;
+            font-size: 14.5px;
+            outline: none;
+            background: #f8fafc;
+            color: #0f172a;
+        }
+        .chat-input:focus {
+            border-color: #4338ca;
+            background: #ffffff;
+        }
+        .send-btn {
+            background: #4338ca;
+            color: #ffffff;
+            border: none;
+            border-radius: 13px;
+            padding: 11px 16px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .send-btn:disabled {
+            opacity: 0.6;
+        }
+        .kb-actions {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+        }
+        .primary-btn {
+            background: #4338ca;
+            color: #ffffff;
+            border: none;
+            border-radius: 11px;
+            padding: 10px 14px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .secondary-btn {
+            background: #ffffff;
+            color: #334155;
+            border: 1px solid #cbd5e1;
+            border-radius: 11px;
+            padding: 10px 14px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .topic-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 12px 14px;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(15, 23, 42, 0.03);
+        }
+        .topic-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .topic-title-input {
+            flex: 1;
+            font-size: 14.5px;
+            font-weight: 800;
+            color: #0f172a;
+            border: 1px solid transparent;
+            border-radius: 8px;
+            padding: 4px 6px;
+            background: transparent;
+        }
+        .topic-title-input:focus {
+            border-color: #cbd5e1;
+            background: #f8fafc;
+            outline: none;
+        }
+        .topic-del-btn {
+            background: #fee2e2;
+            color: #b91c1c;
+            border: none;
+            border-radius: 8px;
+            padding: 5px 9px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .topic-textarea {
+            width: 100%;
+            min-height: 110px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px;
+            font-size: 13.5px;
+            line-height: 1.5;
+            color: #334155;
+            resize: vertical;
+            outline: none;
+        }
+        .topic-textarea:focus {
+            border-color: #4338ca;
+        }
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.55);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 50;
+        }
+        .modal-backdrop.open {
+            display: flex;
+        }
+        .modal-box {
+            background: #ffffff;
+            width: 100%;
+            max-width: 420px;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+        .modal-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .modal-top h3 {
+            font-size: 18px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+        .close-x {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #64748b;
+            cursor: pointer;
+        }
+        .modal-desc {
+            font-size: 13px;
+            line-height: 1.45;
+            color: #475569;
+            margin-bottom: 12px;
+        }
+        .modal-input {
+            width: 100%;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 11px 12px;
+            font-size: 13.5px;
+            margin-bottom: 10px;
+            outline: none;
+        }
+        .modal-input:focus {
+            border-color: #4338ca;
+        }
+        .modal-status {
+            background: #fef9c3;
+            color: #854d0e;
+            border-radius: 10px;
+            padding: 9px 11px;
+            font-size: 12.5px;
+            font-weight: 600;
+            margin-bottom: 14px;
+        }
+        .modal-status.ok {
+            background: #dcfce7;
+            color: #166534;
+        }
+        .modal-status.err {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: space-between;
+        }
+        .scroll-down-btn {
+            position: absolute;
+            right: 16px;
+            bottom: 72px;
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: #4338ca;
+            color: #ffffff;
+            border: none;
+            box-shadow: 0 4px 12px rgba(67, 56, 202, 0.35);
+            font-size: 18px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 20;
+        }
+        .toast {
+            position: fixed;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0f172a;
+            color: #ffffff;
+            padding: 9px 16px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+        }
+        .toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="header-top">
+            <div class="brand">
+                <div class="logo-box">☆</div>
+                <h1>L-39 Engineer</h1>
+            </div>
+        </div>
+        <div class="toolbar">
+            <button type="button" id="apiStatusBtn" class="tool-btn api-btn" onclick="openApiModal()">
+                <span class="status-dot"></span> API
+            </button>
+            <button type="button" class="tool-btn" onclick="exportBackup()" title="Bazanı yüklə">⬇</button>
+            <button type="button" class="tool-btn" onclick="document.getElementById('importJsonInput').click()" title="Baza faylı aç">⬆</button>
+            <button type="button" class="tool-btn" onclick="loadSampleData()">Nümunə</button>
+            <button type="button" class="tool-btn clear-btn" onclick="clearChatMessages()">Təmizlə</button>
+        </div>
+        <div class="tabs-bar">
+            <button type="button" id="tabKb" class="tab-btn" onclick="switchTab('kb')">
+                📖 Məlumatlar <span id="topicCountBadge" class="badge-count">0</span>
+            </button>
+            <button type="button" id="tabChat" class="tab-btn active" onclick="switchTab('chat')">
+                💬 Öyrən
+            </button>
+        </div>
+    </div>
+
+    <div class="sub-status">
+        <div class="sub-status-left">
+            <span class="sub-dot" id="subDot"></span>
+            <span id="subStatusText">Aktiv Baza: 0 mövzu • Gemini AI aktivdir</span>
+        </div>
+        <button type="button" class="sub-link" onclick="switchTab('kb')">Məlumatları Redaktə Et</button>
+    </div>
+
+    <div class="main-area">
+        <div id="panelChat" class="view-panel active">
+            <div id="chatMessages" class="chat-messages"></div>
+            <button type="button" id="scrollDownBtn" class="scroll-down-btn" onclick="scrollToBottom()">↓</button>
+        </div>
+
+        <div id="panelKb" class="view-panel">
+            <div class="kb-actions">
+                <button type="button" class="primary-btn" onclick="addTopic()">+ Yeni Mövzu</button>
+                <button type="button" class="secondary-btn" onclick="document.getElementById('docFileInput').click()">📄 PDF / DOCX / TXT Yüklə</button>
+            </div>
+            <div id="topicsContainer"></div>
+        </div>
+
+        <div id="chatInputWrapper" class="chat-input-bar">
+            <input type="text" id="questionInput" class="chat-input" placeholder="Sual verin və ya yeni məlumat öyrədin..." onkeydown="if(event.key==='Enter') handleUserSend()">
+            <button type="button" id="sendBtn" class="send-btn" onclick="handleUserSend()">Soruş →</button>
+        </div>
+    </div>
+
+    <input type="file" id="docFileInput" accept=".pdf,.docx,.txt" multiple style="display:none" onchange="handleDocFiles(event)">
+    <input type="file" id="importJsonInput" accept=".json" style="display:none" onchange="importBackup(event)">
+
+    <div id="apiModal" class="modal-backdrop" onclick="if(event.target===this) closeApiModal()">
+        <div class="modal-box">
+            <div class="modal-top">
+                <h3>Avtomatik API Bağlantısı</h3>
+                <button type="button" class="close-x" onclick="closeApiModal()">✕</button>
+            </div>
+            <p class="modal-desc">
+                Aşağıya Google AI Studio API açarınızı (<b>AIzaSy...</b>) və ya Worker URL-i yazıb <b>Yadda Saxla</b> basın. Açar yazıldıqda birbaşa Gemini API-yə tam cavab sorğusu gedir.
+            </p>
+            <input type="text" id="proxyUrlInput" class="modal-input" placeholder="Worker URL (istəyə bağlı)">
+            <input type="password" id="apiKeyInput" class="modal-input" placeholder="Gemini API açarı (AIzaSy...)">
+            <div id="apiModalStatus" class="modal-status">Bağlantı yoxlanılır...</div>
+            <div class="modal-actions">
+                <button type="button" class="tool-btn api-btn" onclick="testApiConnection()">Bağlantını Yoxla</button>
+                <button type="button" class="tool-btn" onclick="resetApiSettings()">Sıfırla</button>
+                <button type="button" class="primary-btn" onclick="saveApiSettings()">Yadda Saxla</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script>
+        const DEFAULT_PROXY_URL = "https://l-39engineer.hesenliadem1.workers.dev";
+        const STORAGE_TOPICS_KEY = "l39_engineer_topics_v3";
+        const STORAGE_CHAT_KEY = "l39_engineer_chat_v3";
+        const STORAGE_API_KEY = "l39_gemini_api_key";
+        const STORAGE_PROXY_KEY = "l39_worker_proxy_url";
+
+        const GEMINI_MODELS = [
+            "gemini-3.8-flash",
+            "gemini-2.5-flash",
+            "gemini-2.0-flash",
+            "gemini-3-flash-preview"
+        ];
+
+        let topics = [];
+        let chatHistory = [];
+        let lastUnansweredQuestion = "";
+
+        if (window.pdfjsLib) {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+        }
+
+        function getApiKey() {
+            return (localStorage.getItem(STORAGE_API_KEY) || "").trim();
+        }
+
+        function getProxyUrl() {
+            const saved = localStorage.getItem(STORAGE_PROXY_KEY);
+            return saved !== null ? saved.trim() : DEFAULT_PROXY_URL;
+        }
+
+        function loadState() {
+            try {
+                const rawTopics = localStorage.getItem(STORAGE_TOPICS_KEY);
+                topics = rawTopics ? JSON.parse(rawTopics) : [];
+            } catch (_) {
+                topics = [];
+            }
+
+            if (!Array.isArray(topics) || topics.length === 0) {
+                topics = [
+                    {
+                        id: "topic-1",
+                        title: "L-39 Ümumi Texniki Məlumat",
+                        content: "L-39 Albatros təlim-məşq təyyarəsi AI-25TL turboreaktiv mühərriki ilə təchiz olunmuşdur. Mühərrikin maksimum dartı qüvvəsi 1720 kq-dır."
+                    }
+                ];
+                saveTopics();
+            }
+
+            try {
+                const rawChat = localStorage.getItem(STORAGE_CHAT_KEY);
+                chatHistory = rawChat ? JSON.parse(rawChat) : [];
+            } catch (_) {
+                chatHistory = [];
+            }
+
+            if (!Array.isArray(chatHistory) || chatHistory.length === 0) {
+                chatHistory = [
+                    {
+                        role: "bot",
+                        text: "Salam! Mən **L-39 Engineer** köməkçisiyəm.\n\n• Bazadakı məlumatlar əsasında suallarınıza tam cavab verirəm.\n• Əgər soruşduğunuz məlumat bazada yoxdursa, bunu açıq bildirirəm.\n• Siz cavabı və ya yeni məlumatı mənə yazdıqda avtomatik yaddaşa qeyd edirəm.",
+                        source: ""
+                    }
+                ];
+            }
+        }
+
+        function saveTopics() {
+            localStorage.setItem(STORAGE_TOPICS_KEY, JSON.stringify(topics));
+            updateCounters();
+        }
+
+        function saveChat() {
+            localStorage.setItem(STORAGE_CHAT_KEY, JSON.stringify(chatHistory.slice(-40)));
+        }
+
+        function updateCounters() {
+            const badge = document.getElementById("topicCountBadge");
+            const subText = document.getElementById("subStatusText");
+            const apiBtn = document.getElementById("apiStatusBtn");
+            const hasKey = Boolean(getApiKey());
+            const hasProxy = Boolean(getProxyUrl());
+
+            badge.textContent = topics.length;
+            if (hasKey || hasProxy) {
+                apiBtn.classList.add("connected");
+                subText.textContent = `Aktiv Baza: ${topics.length} mövzu • Gemini AI aktivdir`;
+            } else {
+                apiBtn.classList.remove("connected");
+                subText.textContent = `Aktiv Baza: ${topics.length} mövzu • API açarı gözlənilir`;
+            }
+        }
+
+        function switchTab(tab) {
+            const isChat = tab === "chat";
+            document.getElementById("tabChat").classList.toggle("active", isChat);
+            document.getElementById("tabKb").classList.toggle("active", !isChat);
+            document.getElementById("panelChat").classList.toggle("active", isChat);
+            document.getElementById("panelKb").classList.toggle("active", !isChat);
+            document.getElementById("chatInputWrapper").style.display = isChat ? "flex" : "none";
+            if (!isChat) renderTopics();
+            else scrollToBottom();
+        }
+
+        function normalizeAz(str) {
+            return String(str || "")
+                .toLowerCase()
+                .replace(/ə/g, "e")
+                .replace(/ı/g, "i")
+                .replace(/ö/g, "o")
+                .replace(/ü/g, "u")
+                .replace(/ş/g, "s")
+                .replace(/ç/g, "c")
+                .replace(/ğ/g, "g");
+        }
+
+        function buildKnowledgeContext(query) {
+            const qNorm = normalizeAz(query);
+            const qWords = qNorm.split(/[^a-z0-9]+/).filter(w => w.length >= 2);
+
+            const scored = topics.map(t => {
+                const fullNorm = normalizeAz(`${t.title} ${t.content}`);
+                let score = 0;
+                if (t.title.includes("Öyrənilmiş Qeydlər")) score += 5;
+                qWords.forEach(w => {
+                    if (fullNorm.includes(w)) score += 3;
+                });
+                return { topic: t, score };
+            });
+
+            scored.sort((a, b) => b.score - a.score);
+
+            let combined = "";
+            for (const item of scored) {
+                const block = `=== MÖVZU: ${item.topic.title} ===\n${item.topic.content}\n\n`;
+                if ((combined + block).length <= 28000) {
+                    combined += block;
+                }
+            }
+            return combined.trim();
+        }
+
+        function detectTeachingInput(text) {
+            const trimmed = text.trim();
+            if (!trimmed) return null;
+
+            const lower = normalizeAz(trimmed);
+            const isExplicitQuestion =
+                trimmed.includes("?") ||
+                /^(ne|nedir|nece|necedir|hansi|harada|niye|ne vaxt|kim|izah et|de|soyle|goster|melumat ver)\b/.test(lower);
+
+            if (isExplicitQuestion) return null;
+
+            if (lastUnansweredQuestion) {
+                const q = lastUnansweredQuestion;
+                lastUnansweredQuestion = "";
+                return {
+                    factLine: `Sual: ${q} — Cavab: ${trimmed}`,
+                    confirmation: `Yaddaşa yazıldı: **"${q}"** sualının cavabı kimi **"${trimmed}"** qeyd edildi.`
+                };
+            }
+
+            const hasFactEnding = /(dir|dır|dur|dür|ilir|ılır|ulur|ülür|olur|edir|edilir)\.?$/i.test(lower);
+            const hasMeasureOrNumber = /\b\d+([.,]\d+)?\s*(litr|l|kq|ton|mm|sm|m|km|saat|deq|bar|atm|volt|v|amper|a|derece|°c|faiz|%)/i.test(lower);
+            const hasTeachPrefix = /^(yadda saxla|qeyd et|oyren|duzelis|cavab)\s*[:\-]/i.test(lower);
+
+            if (hasTeachPrefix || hasFactEnding || hasMeasureOrNumber) {
+                const cleanFact = trimmed.replace(/^(yadda saxla|qeyd et|oyren|duzelis|cavab)\s*[:\-]\s*/i, "");
+                return {
+                    factLine: cleanFact,
+                    confirmation: `Yaddaşa yazıldı: **"${cleanFact}"** məlumatı bazaya əlavə edildi.`
+                };
+            }
+
+            return null;
+        }
+
+        function saveFactToMemory(factLine) {
+            const memTitle = "Öyrənilmiş Qeydlər (Yaddaş)";
+            let memTopic = topics.find(t => t.title === memTitle);
+            if (!memTopic) {
+                memTopic = {
+                    id: "topic-memory-" + Date.now(),
+                    title: memTitle,
+                    content: ""
+                };
+                topics.unshift(memTopic);
+            }
+            const line = `• ${factLine}`;
+            if (!memTopic.content.includes(factLine)) {
+                memTopic.content = memTopic.content
+                    ? `${memTopic.content}\n${line}`
+                    : line;
+                saveTopics();
+            }
+        }
+
+        async function callGemini(promptText, contextText) {
+            const apiKey = getApiKey();
+            const proxyUrl = getProxyUrl();
+
+            if (!apiKey && !proxyUrl) {
+                throw new Error("API açarı daxil edilməyib. Yuxarıdakı API düyməsinə basıb açarınızı yazın.");
+            }
+
+            const systemPrompt = `Sən L-39 təyyarəsi üzrə mühəndis köməkçisisən. Cavabları yalnız Azərbaycan dilində, tam, aydın və heç vaxt yarımçıq kəsmədən yaz.
+
+ÇOX VACİB QAYDALAR:
+1. YALNIZ aşağıda verilən "MƏLUMAT BAZASI"ndakı məlumatlara əsaslan. Özündən heç bir texniki rəqəm, fakt və ya təxmin uydurma!
+2. Əgər istifadəçinin soruşduğu sualın cavabı MƏLUMAT BAZASI-nda YOXDURSA, cavabının ilk sətrində mütləq bu ifadəni yaz:
+[BAZADA_YOXDUR]
+Və ardınca qısa yaz: "Bu barədə məlumat bazasında cavab yoxdur. Düzgün cavabı bura yazsanız, mən onu avtomatik yaddaşa qeyd edəcəyəm."
+3. Əgər cavab bazada VARSA, sualı tam və əhatəli izah et, cümlələri yarımçıq saxlama və ən sonda mənbə mövzunun adını "Mənbə: <Mövzu adı>" kimi qeyd et.
+
+MƏLUMAT BAZASI:
+${contextText || "(Baza boşdur)"}`;
+
+            const basePayload = {
+                systemInstruction: {
+                    parts: [{ text: systemPrompt }]
+                },
+                contents: [
+                    {
+                        role: "user",
+                        parts: [{ text: promptText }]
+                    }
+                ],
+                generationConfig: {
+                    temperature: 0.2,
+                    maxOutputTokens: 8192
+                }
+            };
+
+            let lastErrorMessage = "Naməlum API xətası";
+
+            // Əvvəlcə birbaşa Gemini API-yə (apiKey varsa) işlək modellərlə cəhd edirik
+            if (apiKey) {
+                for (const model of GEMINI_MODELS) {
+                    const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent?key=${encodeURIComponent(apiKey)}`;
+                    const response = await fetch(url, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(basePayload)
+                    });
+                    const data = await response.json().catch(() => ({}));
+
+                    if (response.ok) {
+                        const parts = data?.candidates?.[0]?.content?.parts || [];
+                        const fullText = parts.map(p => p.text || "").join("").trim();
+                        if (fullText) return fullText;
+                        lastErrorMessage = "Model boş cavab qaytardı.";
+                    } else {
+                        lastErrorMessage = data?.error?.message || `HTTP ${response.status}`;
+                        const lowerErr = lastErrorMessage.toLowerCase();
+                        const isModelIssue =
+                            lowerErr.includes("not found") ||
+                            lowerErr.includes("no longer available") ||
+                            lowerErr.includes("deprecated") ||
+                            response.status === 404;
+                        if (!isModelIssue) {
+                            throw new Error(lastErrorMessage);
+                        }
+                    }
+                }
+            }
+
+            // Açar yoxdursa və ya birbaşa çağırış alınmadısa Worker proxy ilə cəhd edirik
+            if (proxyUrl) {
+                const response = await fetch(proxyUrl, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ model: GEMINI_MODELS[0], ...basePayload })
+                });
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    throw new Error(data?.error?.message || data?.error || lastErrorMessage);
+                }
+                const parts = data?.candidates?.[0]?.content?.parts || [];
+                const fullText = parts.map(p => p.text || "").join("").trim();
+                if (!fullText) {
+                    throw new Error("Model boş cavab qaytardı.");
+                }
+                return fullText;
+            }
+
+            throw new Error(lastErrorMessage);
+        }
+
+        async function handleUserSend() {
+            const input = document.getElementById("questionInput");
+            const sendBtn = document.getElementById("sendBtn");
+            const userText = input.value.trim();
+            if (!userText) return;
+
+            input.value = "";
+            chatHistory.push({ role: "user", text: userText });
+            renderChat();
+
+            const taught = detectTeachingInput(userText);
+            if (taught) {
+                saveFactToMemory(taught.factLine);
+                chatHistory.push({
+                    role: "bot",
+                    text: taught.confirmation,
+                    savedTag: "Öyrənilmiş Qeydlər (Yaddaş)"
+                });
+                saveChat();
+                renderChat();
+                showToast("Məlumat yaddaşa yazıldı!");
+                return;
+            }
+
+            sendBtn.disabled = true;
+            const loadingId = "loading-" + Date.now();
+            chatHistory.push({ role: "bot", text: "Cavab hazırlanır...", isLoading: true, id: loadingId });
+            renderChat();
+
+            try {
+                const contextText = buildKnowledgeContext(userText);
+                const aiReply = await callGemini(userText, contextText);
+
+                chatHistory = chatHistory.filter(m => m.id !== loadingId);
+
+                if (aiReply.includes("[BAZADA_YOXDUR]")) {
+                    lastUnansweredQuestion = userText;
+                    const cleanReply = aiReply.replace(/\[BAZADA_YOXDUR\]\s*/g, "").trim() ||
+                        "Bu barədə məlumat bazasında cavab yoxdur. Düzgün cavabı bura yazsanız, mən onu avtomatik yaddaşa qeyd edəcəyəm.";
+                    chatHistory.push({
+                        role: "bot",
+                        text: cleanReply,
+                        notFoundTag: true
+                    });
+                } else {
+                    lastUnansweredQuestion = "";
+                    let sourceName = "";
+                    let mainBody = aiReply;
+                    const srcMatch = aiReply.match(/Mənbə:\s*(.+)$/im);
+                    if (srcMatch) {
+                        sourceName = srcMatch[1].trim();
+                        mainBody = aiReply.replace(/Mənbə:\s*(.+)$/im, "").trim();
+                    }
+                    chatHistory.push({
+                        role: "bot",
+                        text: mainBody,
+                        source: sourceName
+                    });
+                }
+            } catch (err) {
+                chatHistory = chatHistory.filter(m => m.id !== loadingId);
+                chatHistory.push({
+                    role: "bot",
+                    text: `Xəta baş verdi: ${err.message}\n\nYuxarıdakı **API** düyməsindən Google AI Studio açarınızı (\`AIzaSy...\`) yoxlayın.`
+                });
+            } finally {
+                sendBtn.disabled = false;
+                saveChat();
+                renderChat();
+            }
+        }
+
+        function formatMarkdown(text) {
+            let safe = String(text || "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+
+            safe = safe.replace(/^#{1,4}\s+(.+)$/gm, "<h4>$1</h4>");
+            safe = safe.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+
+            const lines = safe.split("\n");
+            let html = "";
+            let inList = false;
+
+            for (const line of lines) {
+                const listMatch = line.match(/^\s*[\*\-•]\s+(.+)$/);
+                if (listMatch) {
+                    if (!inList) {
+                        html += "<ul>";
+                        inList = true;
+                    }
+                    html += `<li>${listMatch[1]}</li>`;
+                } else {
+                    if (inList) {
+                        html += "</ul>";
+                        inList = false;
+                    }
+                    if (line.startsWith("<h4>")) {
+                        html += line;
+                    } else if (line.trim() !== "") {
+                        html += `<p>${line}</p>`;
+                    }
+                }
+            }
+            if (inList) html += "</ul>";
+            return html;
+        }
+
+        function renderChat() {
+            const box = document.getElementById("chatMessages");
+            box.innerHTML = chatHistory.map(m => {
+                if (m.role === "user") {
+                    return `<div class="msg-row user"><div class="msg-bubble">${formatMarkdown(m.text)}</div></div>`;
+                }
+                let extraBadge = "";
+                if (m.source) {
+                    extraBadge = `<div class="source-pill">Mənbə: ${m.source}</div>`;
+                } else if (m.savedTag) {
+                    extraBadge = `<div class="saved-pill">✓ Yaddaşa yazıldı: ${m.savedTag}</div>`;
+                } else if (m.notFoundTag) {
+                    extraBadge = `<div class="warn-pill">ℹ️ Cavabı yazın, avtomatik öyrənim</div>`;
+                }
+                return `
+                    <div class="msg-row bot">
+                        <div class="bot-avatar">⚡</div>
+                        <div class="msg-bubble">
+                            ${formatMarkdown(m.text)}
+                            ${extraBadge}
+                        </div>
+                    </div>
+                `;
+            }).join("");
+            scrollToBottom();
+        }
+
+        function scrollToBottom() {
+            const box = document.getElementById("chatMessages");
+            requestAnimationFrame(() => {
+                box.scrollTop = box.scrollHeight;
+            });
+        }
+
+        document.getElementById("chatMessages").addEventListener("scroll", function () {
+            const nearBottom = this.scrollHeight - this.scrollTop - this.clientHeight < 90;
+            document.getElementById("scrollDownBtn").style.display = nearBottom ? "none" : "flex";
+        });
+
+        function clearChatMessages() {
+            lastUnansweredQuestion = "";
+            chatHistory = [
+                {
+                    role: "bot",
+                    text: "Söhbət təmizləndi. Məlumat bazanız və öyrədilmiş qeydlər qorunub saxlanıldı. Yeni sualınızı verə bilərsiniz."
+                }
+            ];
+            saveChat();
+            renderChat();
+            showToast("Söhbət təmizləndi");
+        }
+
+        function renderTopics() {
+            const container = document.getElementById("topicsContainer");
+            container.innerHTML = topics.map((t, idx) => `
+                <div class="topic-card">
+                    <div class="topic-header">
+                        <input type="text" class="topic-title-input" value="${t.title.replace(/"/g, "&quot;")}" onchange="updateTopicTitle(${idx}, this.value)">
+                        <button type="button" class="topic-del-btn" onclick="deleteTopic(${idx})">Sil</button>
+                    </div>
+                    <textarea class="topic-textarea" oninput="updateTopicContent(${idx}, this.value)">${t.content.replace(/</g, "&lt;")}</textarea>
+                </div>
+            `).join("");
+        }
+
+        function addTopic() {
+            topics.unshift({
+                id: "topic-" + Date.now(),
+                title: "Yeni Mövzu " + (topics.length + 1),
+                content: ""
+            });
+            saveTopics();
+            renderTopics();
+        }
+
+        function updateTopicTitle(idx, val) {
+            if (topics[idx]) {
+                topics[idx].title = val.trim() || "Adsız Mövzu";
+                saveTopics();
+            }
+        }
+
+        function updateTopicContent(idx, val) {
+            if (topics[idx]) {
+                topics[idx].content = val;
+                saveTopics();
+            }
+        }
+
+        function deleteTopic(idx) {
+            topics.splice(idx, 1);
+            saveTopics();
+            renderTopics();
+            showToast("Mövzu silindi");
+        }
+
+        async function handleDocFiles(event) {
+            const files = Array.from(event.target.files || []);
+            if (!files.length) return;
+
+            for (const file of files) {
+                const name = file.name;
+                const ext = name.split(".").pop().toLowerCase();
+                let extractedText = "";
+
+                try {
+                    if (ext === "txt") {
+                        extractedText = await file.text();
+                    } else if (ext === "docx" && window.mammoth) {
+                        const arrayBuffer = await file.arrayBuffer();
+                        const res = await mammoth.extractRawText({ arrayBuffer });
+                        extractedText = res.value || "";
+                    } else if (ext === "pdf" && window.pdfjsLib) {
+                        const arrayBuffer = await file.arrayBuffer();
+                        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                        for (let p = 1; p <= pdf.numPages; p++) {
+                            const page = await pdf.getPage(p);
+                            const tc = await page.getTextContent();
+                            extractedText += tc.items.map(i => i.str).join(" ") + "\n";
+                        }
+                    }
+
+                    if (extractedText.trim()) {
+                        topics.unshift({
+                            id: "topic-file-" + Date.now() + "-" + Math.random().toString(36).slice(2, 6),
+                            title: name.replace(/\.[^.]+$/, ""),
+                            content: extractedText.trim()
+                        });
+                    }
+                } catch (err) {
+                    showToast(`Xəta (${name}): ${err.message}`);
+                }
+            }
+
+            event.target.value = "";
+            saveTopics();
+            renderTopics();
+            showToast("Fayl(lar) bazaya əlavə edildi!");
+        }
+
+        function exportBackup() {
+            const blob = new Blob([JSON.stringify(topics, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "l39-engineer-baza.json";
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importBackup(event) {
+            const file = event.target.files?.[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function () {
+                try {
+                    const parsed = JSON.parse(reader.result);
+                    if (Array.isArray(parsed)) {
+                        topics = parsed;
+                        saveTopics();
+                        renderTopics();
+                        showToast("Baza bərpa edildi!");
+                    }
+                } catch (_) {
+                    showToast("Yanlış JSON faylı");
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = "";
+        }
+
+        function loadSampleData() {
+            topics.unshift({
+                id: "topic-sample-" + Date.now(),
+                title: "Bloknot L 39 (Nümunə)",
+                content: "L-39 təyyarəsinin yanacaq sistemi 5 fyuzelyaj bakından və 2 qanad ucu bakından ibarətdir. Ümumi yanacaq tutumu 1255 litrdir."
+            });
+            saveTopics();
+            renderTopics();
+            showToast("Nümunə mövzu əlavə edildi");
+        }
+
+        function openApiModal() {
+            document.getElementById("proxyUrlInput").value = getProxyUrl();
+            document.getElementById("apiKeyInput").value = getApiKey();
+            const st = document.getElementById("apiModalStatus");
+            st.className = "modal-status";
+            st.textContent = getApiKey()
+                ? "API açarı yaddaşda var. Yoxlamaq üçün 'Bağlantını Yoxla' basın."
+                : "Google AI Studio açarınızı (AIzaSy...) daxil edin.";
+            document.getElementById("apiModal").classList.add("open");
+        }
+
+        function closeApiModal() {
+            document.getElementById("apiModal").classList.remove("open");
+        }
+
+        function saveApiSettings() {
+            const proxyVal = document.getElementById("proxyUrlInput").value.trim();
+            const keyVal = document.getElementById("apiKeyInput").value.trim();
+            localStorage.setItem(STORAGE_PROXY_KEY, proxyVal);
+            localStorage.setItem(STORAGE_API_KEY, keyVal);
+            updateCounters();
+            showToast("API ayarları yadda saxlanıldı!");
+            closeApiModal();
+        }
+
+        function resetApiSettings() {
+            localStorage.removeItem(STORAGE_API_KEY);
+            localStorage.setItem(STORAGE_PROXY_KEY, DEFAULT_PROXY_URL);
+            document.getElementById("apiKeyInput").value = "";
+            document.getElementById("proxyUrlInput").value = DEFAULT_PROXY_URL;
+            updateCounters();
+            const st = document.getElementById("apiModalStatus");
+            st.className = "modal-status";
+            st.textContent = "Ayarlar sıfırlandı.";
+        }
+
+        async function testApiConnection() {
+            const proxyVal = document.getElementById("proxyUrlInput").value.trim();
+            const keyVal = document.getElementById("apiKeyInput").value.trim();
+            localStorage.setItem(STORAGE_PROXY_KEY, proxyVal);
+            localStorage.setItem(STORAGE_API_KEY, keyVal);
+            updateCounters();
+
+            const st = document.getElementById("apiModalStatus");
+            st.className = "modal-status";
+            st.textContent = "Yoxlanılır...";
+
+            try {
+                const reply = await callGemini("Salam, qısaca 'Bağlantı uğurludur' yaz.", "Salamlaşma testi: Bağlantı uğurludur.");
+                st.className = "modal-status ok";
+                st.textContent = "✓ Uğurlu: " + reply.replace(/\[BAZADA_YOXDUR\]/g, "").slice(0, 80);
+            } catch (err) {
+                st.className = "modal-status err";
+                st.textContent = "Xəta: " + err.message;
+            }
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById("toast");
+            t.textContent = msg;
+            t.classList.add("show");
+            setTimeout(() => t.classList.remove("show"), 2600);
+        }
+
+        loadState();
+        updateCounters();
+        renderChat();
+    </script>
+</body>
+</html>
